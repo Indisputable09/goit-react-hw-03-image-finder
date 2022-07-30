@@ -1,39 +1,91 @@
 import { GlobalStyle } from "./GlobalStyle";
 import { Component } from "react";
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, Slide } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
 import '../../src/styles.css'
 import Searchbar from "./Searchbar";
 import ImageGallery from "./ImageGallery";
 import Button from "./Button";
+import Loader from "./Loader";
+import { fetchData } from "services/API";
+
 export default class App extends Component {
   state = {
     searchQuery: '',
     page: 1,
-    isLoading: false,
+    hits: [],
+    status: 'IDLE'
   }
 
   handlePageIncrement = () => {
     this.setState(prevState => (
-      {page: prevState.page + 1}
+      { page: prevState.page + 1 }
     ))
+    setTimeout(() => {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: "smooth",
+      });
+    }, 500);
   };
 
   handleFormSubmit = searchQuery => {
-  this.setState({ searchQuery, page: 1 });
-    console.log(this.state.page)
+    this.setState({ searchQuery, page: 1, hits: [], status: 'IDLE' });
   };
+
+  async componentDidUpdate(_, prevState) {
+    const currentPage = this.state.page;
+    const prevPage = prevState.page;
+    const prevSearchQuery = prevState.searchQuery
+    const currentSearchQuery = this.state.searchQuery
+    try {
+      if (prevSearchQuery !== currentSearchQuery) {
+        this.setState({ status: 'PENDING' });
+        const response = await fetchData(currentSearchQuery, currentPage);
+        if (response.total === 0 || (response.hits.length === 0 && response.data.totalHits > 0)) {
+          this.setState({ status: 'IDLE' });
+          return;
+        }
+        this.setState({ status: 'RESOLVED' });
+        this.setState({ hits: response.hits });
+        return;
+      }
+      if (prevPage !== currentPage) {
+        this.setState({ status: 'PENDING' });
+        const response = await fetchData(currentSearchQuery, currentPage);
+        if (response.total === 0 || (response.hits.length === 0 && response.data.totalHits > 0)) {
+          this.setState({ status: 'IDLE' });
+          return;
+        }
+        this.setState({ status: 'RESOLVED' });
+        this.setState(prevState => ({
+          hits: [...prevState.hits, ...response.hits]
+        }));
+        return;
+      }
+    } catch (error) {
+      console.log(error)
+      this.setState({ status: 'IDLE' });
+    }
+  }
   
   render() {
-    const { handleFormSubmit, handlePageIncrement} = this;
-    const { searchQuery, page } = this.state;
+    const { handleFormSubmit, handlePageIncrement } = this;
+    const { hits, status } = this.state;
     return (
       <div className="App">
         <GlobalStyle />
-        {/* <ToastContainer autoClose={5000}/> */}
+        <ToastContainer position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          theme={'colored'}
+          transition={Slide}
+          closeOnClick/>
         <Searchbar onSubmit={handleFormSubmit} />
-        <ImageGallery searchQuery={searchQuery} page={page} handlePageIncrement={handlePageIncrement} />
-        {/* <Button/> */}
-        {/* <Searchbar/> <ImageGallery> <ImageGalleryItem/> <Loader> <Button> <Modal>*/}
+        {hits.length > 0 && <ImageGallery hits={hits} />}
+        {status === "PENDING" && <Loader />}
+        {status === "RESOLVED" && <Button onClick={handlePageIncrement} />}
       </div>
     );
   }

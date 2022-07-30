@@ -1,6 +1,7 @@
 import { Component } from "react";
 import { AiOutlineSearch } from 'react-icons/ai';
-import { toast} from 'react-toastify';
+import { toast } from 'react-toastify';
+import PropTypes from 'prop-types';
 
 export default class Searchbar extends Component {
     state = {
@@ -11,13 +12,8 @@ export default class Searchbar extends Component {
         const { searchQuery } = this.state;
         const { onSubmit} = this.props;
         e.preventDefault();
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth",
-        });
         if (searchQuery.trim() === '') {
-            // toast('Write smth');
-            alert('Write smth');
+            toast.error('Please, write something into the field.');
             return;
         }
         onSubmit(searchQuery);
@@ -36,7 +32,6 @@ export default class Searchbar extends Component {
             <header className="Searchbar">
                 <form onSubmit={handleSubmit} className="SearchForm">
                     <button type="submit" className="SearchForm-button"><AiOutlineSearch className="SearchForm-icon" />
-                        {/* <span className="SearchForm-button-label"></span> */}
                     </button>
 
                     <input onChange={handleChange}
@@ -51,4 +46,8 @@ export default class Searchbar extends Component {
             </header>
         )
     }
+};
+
+Searchbar.propTypes = {
+    onSubmit: PropTypes.func.isRequired,
 }

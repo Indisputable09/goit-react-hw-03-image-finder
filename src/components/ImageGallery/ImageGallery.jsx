@@ -1,75 +1,40 @@
 import { Component } from "react";
-import axios from "axios";
+import PropTypes from 'prop-types';
 import ImageGalleryItem from "components/ImageGalleryItem";
-import Button from "components/Button";
-
-axios.defaults.baseURL = 'https://pixabay.com/api/';
-const URL_KEY = '27903219-6f010dc630c8173d81668507d';
+import Modal from "components/Modal";
 
 export default class ImageGallery extends Component {
     state = {
-        hits: [],
+        showModal: false,
+        imageTags: null,
+        imageLarge: null,
     }
-    
-    // componentDidMount() {
-    //     console.log('Mount')
-    // }
 
-    async componentDidUpdate(prevProps, prevState) {
-        console.log('Update')
-        const { page } = this.props;
-        const prevSearchQuery = prevProps.searchQuery
-        const currentSearchQuery = this.props.searchQuery
-        if (prevSearchQuery !== currentSearchQuery) {
-            const response = await axios.get('', {
-                params: {
-                    key: URL_KEY,
-                    q: currentSearchQuery,
-                    image_type: 'photo',
-                    orientation: 'horizontal',
-                    safesearch: true,
-                    per_page: 12,
-                    page: page,
-                }
-            });
-            this.setState({ hits: response.data.hits });
-            // if (prevProps.page !== page && page !== 1) {
-            //     this.setState(prevState => ({
-            //     hits: [...prevState.hits, ...response.data.hits]
-            // }));
-            // }
-            // this.setState(prevState => ({
-            //     hits: [...prevState.hits, ...response.data.hits]
-            // }));
-        }
-        if (prevProps.page !== page && page !== 1) {
-            const response = await axios.get('', {
-                params: {
-                    key: URL_KEY,
-                    q: currentSearchQuery,
-                    image_type: 'photo',
-                    orientation: 'horizontal',
-                    safesearch: true,
-                    per_page: 12,
-                    page: page,
-                }
-            });
-            this.setState(prevState => ({
-                hits: [...prevState.hits, ...response.data.hits]
-            }));
-        }
+    handleShowModal = () => {
+        this.setState(({showModal}) => (
+            { showModal: !showModal }
+        ))
     }
+
+    handleImageShow = (imageTags, imageLarge) => {
+        this.setState({ imageTags, imageLarge });
+    }
+
     render() {
-        const { handlePageIncrement } = this.props;
-        const { hits } = this.state;
+        const { handleShowModal, handleImageShow } = this;
+        const { showModal, imageTags, imageLarge } = this.state;
+        const { hits } = this.props;
         return (
             <>
                 <ul className="ImageGallery">
-                    {hits == false ? <p>No hits</p> : <ImageGalleryItem hits={hits} />}
-                    {/* <ImageGalleryItem hits={hits}/> */}
+                    <ImageGalleryItem hits={hits} onShowModal={handleShowModal} handleImageShow={handleImageShow} />
                 </ul>
-                {hits != false && <Button onClick={handlePageIncrement} />}
+                {showModal && <Modal onClose={handleShowModal}><img src={imageLarge} alt={imageTags} /></Modal>}
             </>
         )
     }
+};
+
+ImageGallery.propTypes = {
+    hits: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
