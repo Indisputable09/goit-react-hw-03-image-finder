@@ -36,8 +36,8 @@ export default class App extends Component {
   async componentDidUpdate(_, prevState) {
     const currentPage = this.state.page;
     const prevPage = prevState.page;
-    const prevSearchQuery = prevState.searchQuery
-    const currentSearchQuery = this.state.searchQuery
+    const prevSearchQuery = prevState.searchQuery;
+    const currentSearchQuery = this.state.searchQuery;
     try {
       if (prevSearchQuery !== currentSearchQuery) {
         this.setState({ status: 'PENDING' });

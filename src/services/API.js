@@ -21,7 +21,7 @@ export async function fetchData(searchQuery, page) {
         'Sorry, there are no images matching your search query. Please try again.'
       );
     }
-    if (response.data.hits.length === 0 && response.data.totalHits > 0) {
+    if (response.data.hits.length % 12 !== 0 && response.data.totalHits > 0) {
       toast.error("We're sorry, but you've reached the end of search results.");
     }
     return response.data;
