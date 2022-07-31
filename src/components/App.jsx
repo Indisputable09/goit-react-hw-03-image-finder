@@ -39,18 +39,7 @@ export default class App extends Component {
     const prevSearchQuery = prevState.searchQuery;
     const currentSearchQuery = this.state.searchQuery;
     try {
-      if (prevSearchQuery !== currentSearchQuery) {
-        this.setState({ status: 'PENDING' });
-        const response = await fetchData(currentSearchQuery, currentPage);
-        if (response.total === 0 || (response.hits.length === 0 && response.data.totalHits > 0)) {
-          this.setState({ status: 'IDLE' });
-          return;
-        }
-        this.setState({ status: 'RESOLVED' });
-        this.setState({ hits: response.hits });
-        return;
-      }
-      if (prevPage !== currentPage) {
+      if (prevSearchQuery !== currentSearchQuery || prevPage !== currentPage) {
         this.setState({ status: 'PENDING' });
         const response = await fetchData(currentSearchQuery, currentPage);
         if (response.total === 0 || (response.hits.length === 0 && response.data.totalHits > 0)) {
