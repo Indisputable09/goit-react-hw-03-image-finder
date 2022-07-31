@@ -14,7 +14,7 @@ export default class App extends Component {
     searchQuery: '',
     page: 1,
     hits: [],
-    status: 'IDLE'
+    status: 'IDLE',
   }
 
   handlePageIncrement = () => {
@@ -65,13 +65,15 @@ export default class App extends Component {
       }
     } catch (error) {
       console.log(error)
-      this.setState({ status: 'IDLE' });
+      this.setState({ status: 'REJECTED' });
     }
   }
   
   render() {
     const { handleFormSubmit, handlePageIncrement } = this;
     const { hits, status } = this.state;
+    const NOT_EMPTY_ARRAY = hits.length !== 0;
+    const ENOUGH_IMAGES = hits.length % 12 === 0;
     return (
       <div className="App">
         <GlobalStyle />
@@ -83,9 +85,10 @@ export default class App extends Component {
           transition={Slide}
           closeOnClick/>
         <Searchbar onSubmit={handleFormSubmit} />
-        {hits.length > 0 && <ImageGallery hits={hits} />}
+        {status === "REJECTED" && <h1 className="errorTitle">Ooops, someting went wrong. Please, try again.</h1>}
+        {hits.length > 0 && status !== "REJECTED" && <ImageGallery hits={hits} />}
         {status === "PENDING" && <Loader />}
-        {status === "RESOLVED" && <Button onClick={handlePageIncrement} />}
+        {status === "RESOLVED" && ENOUGH_IMAGES && NOT_EMPTY_ARRAY && <Button onClick={handlePageIncrement} />}
       </div>
     );
   }
